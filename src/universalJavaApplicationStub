@@ -326,6 +326,10 @@ elif [ ! -z ${JVMVersion} ] ; then
 		exit 3
 	fi
 
+# check public JRE plugin (Oracle Java)
+elif [ -x "${oracle_jre_plugin}" ]; then
+	JAVACMD="${oracle_jre_plugin}"
+
 # otherwise check "/usr/libexec/java_home" symlinks
 elif [ -x /usr/libexec/java_home ] && /usr/libexec/java_home -F > /dev/null; then
 	JAVACMD="`/usr/libexec/java_home 2> /dev/null`/bin/java"
@@ -334,9 +338,11 @@ elif [ -x /usr/libexec/java_home ] && /usr/libexec/java_home -F > /dev/null; the
 elif [ -h /Library/Java/Home ]; then
 	JAVACMD="${apple_jre_plugin}"
 
-# fallback: public JRE plugin (Oracle Java)
 else
-	JAVACMD="${oracle_jre_plugin}"
+	# display error message with applescript
+	osascript -e "tell application \"System Events\" to display dialog \"ERROR launching '${CFBundleName}'\n\nNo suitable Java version found on your system!\nThis program requires Java ${JVMVersion}\nMake sure you install the required Java version.\" with title \"${CFBundleName}\" buttons {\" OK \"} default button 1 with icon path to resource \"${CFBundleIconFile}\" in bundle (path to me)"
+	# exit with error
+	exit 3
 fi
 
 # fallback fallback: /usr/bin/java
